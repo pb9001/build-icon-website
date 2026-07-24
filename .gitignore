@@ -1,0 +1,13 @@
+# React
+build-icon-react/node_modules/
+build-icon-react/dist/
+
+# Backend
+build-icon-backend/node_modules/
+build-icon-backend/uploads/
+
+# Environment
+.env
+
+# Logs
+*.log

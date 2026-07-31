@@ -1,0 +1,28 @@
+[
+  {
+    "id": 1,
+    "company": "Build Icon Developers",
+    "logo": "/uploads/build-icon-logo.png",
+    "people": [
+      "Prashant Ratanrao Bhosale",
+      "Wasim Kasam Shaikh"
+    ],
+    "phones": [
+      "9975203003",
+      "9225321666"
+    ],
+    "whatsapp": "9975203003"
+  },
+  {
+    "id": 2,
+    "company": "Iqra Builders and Land Developers",
+    "logo": "/uploads/iqra-logo.png",
+    "people": [
+      "Salim Jahagirdar"
+    ],
+    "phones": [
+      "9226490443"
+    ],
+    "whatsapp": ""
+  }
+]

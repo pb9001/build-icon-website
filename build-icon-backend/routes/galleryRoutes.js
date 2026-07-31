@@ -4,13 +4,8 @@ const path = require("path");
 
 const router = express.Router();
 
-
 const upload = require("../middleware/upload");
-
-const gallery = require("../data/galleryData");
-
-
-
+const db = require("../config/db");
 
 // ==========================
 // GET ALL IMAGES
@@ -18,14 +13,25 @@ const gallery = require("../data/galleryData");
 
 router.get("/", (req, res) => {
 
-    res.json(gallery);
+  db.query(
+
+    "SELECT * FROM gallery",
+
+    (err, results) => {
+
+      if (err) {
+
+        return res.status(500).json(err);
+
+      }
+
+      res.json(results);
+
+    }
+
+  );
 
 });
-
-
-
-
-
 
 // ==========================
 // UPLOAD IMAGE
@@ -33,145 +39,144 @@ router.get("/", (req, res) => {
 
 router.post(
 
-    "/upload",
+  "/upload",
 
-    upload.single("image"),
+  upload.single("image"),
 
-    (req, res) => {
+  (req, res) => {
 
+    const newImage = {
 
-        const newImage = {
+      name: req.file.filename,
 
+      url: `http://localhost:5002/uploads/${req.file.filename}`
 
-            id: Date.now(),
+    };
 
+    db.query(
 
-            name: req.file.filename,
+      "INSERT INTO gallery(name,url) VALUES(?,?)",
 
+      [
 
-            url:
-            `http://localhost:5002/uploads/${req.file.filename}`
+        newImage.name,
 
+        newImage.url
 
-        };
+      ],
 
+      (err, result) => {
 
+        if (err) {
 
-        gallery.push(newImage);
+          return res.status(500).json(err);
 
-
+        }
 
         res.json({
 
-            message:
-            "Image uploaded successfully",
+          message: "Image uploaded successfully",
 
-            image:newImage
+          image: {
+
+            id: result.insertId,
+
+            ...newImage
+
+          }
 
         });
 
+      }
 
+    );
 
-    }
+  }
 
 );
-
-
-
-
-
-
 
 // ==========================
 // DELETE IMAGE
 // ==========================
 
-
 router.delete(
 
-"/:id",
+  "/:id",
 
-(req,res)=>{
+  (req, res) => {
 
+    db.query(
 
-    const id = req.params.id;
+      "SELECT * FROM gallery WHERE id=?",
 
+      [req.params.id],
 
+      (err, result) => {
 
-    const imageIndex = gallery.findIndex(
+        if (err) {
 
-        img => img.id == id
-
-    );
-
-
-
-    if(imageIndex !== -1){
-
-
-
-        const image = gallery[imageIndex];
-
-
-
-        const filePath = path.join(
-
-            "uploads",
-
-            image.name
-
-        );
-
-
-
-
-        // Delete actual image file
-
-        if(fs.existsSync(filePath)){
-
-
-            fs.unlinkSync(filePath);
-
+          return res.status(500).json(err);
 
         }
 
+        if (result.length === 0) {
 
+          return res.status(404).json({
 
+            message: "Image not found"
 
-        // Remove from gallery array
+          });
 
-        gallery.splice(
+        }
 
-            imageIndex,
+        const image = result[0];
 
-            1
+        const filePath = path.join(
+
+          __dirname,
+
+          "../uploads",
+
+          image.name
 
         );
 
+        if (fs.existsSync(filePath)) {
 
+          fs.unlinkSync(filePath);
 
-    }
+        }
 
+        db.query(
 
+          "DELETE FROM gallery WHERE id=?",
 
-    res.json({
+          [req.params.id],
 
-        message:
-        "Image deleted successfully",
+          (err) => {
 
+            if (err) {
 
-        gallery:gallery
+              return res.status(500).json(err);
 
+            }
 
-    });
+            res.json({
 
+              message: "Image deleted successfully"
 
+            });
 
-});
+          }
 
+        );
 
+      }
 
+    );
 
+  }
 
+);
 
 module.exports = router;

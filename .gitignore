@@ -4,7 +4,10 @@ build-icon-react/dist/
 
 # Backend
 build-icon-backend/node_modules/
-build-icon-backend/uploads/
+
+# Backup
+BuildIcon_Backup/
+BuildIcon_Backup (1)/
 
 # Environment
 .env

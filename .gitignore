@@ -1,4 +1,4 @@
-# React
+.gitignore# React
 build-icon-react/node_modules/
 build-icon-react/dist/
 
@@ -14,3 +14,7 @@ BuildIcon_Backup (1)/
 
 # Logs
 *.log
+
+# Database backups
+BuildIcon_Backup/
+BuildIcon_Backup (1)/

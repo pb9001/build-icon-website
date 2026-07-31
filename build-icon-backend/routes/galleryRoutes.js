@@ -5,10 +5,11 @@ const path = require("path");
 const router = express.Router();
 
 const upload = require("../middleware/upload");
+const verifyToken = require("../middleware/authMiddleware");
 const db = require("../config/db");
 
 // ==========================
-// GET ALL IMAGES
+// GET ALL IMAGES (PUBLIC)
 // ==========================
 
 router.get("/", (req, res) => {
@@ -34,12 +35,14 @@ router.get("/", (req, res) => {
 });
 
 // ==========================
-// UPLOAD IMAGE
+// UPLOAD IMAGE (PROTECTED)
 // ==========================
 
 router.post(
 
   "/upload",
+
+  verifyToken,
 
   upload.single("image"),
 
@@ -96,12 +99,14 @@ router.post(
 );
 
 // ==========================
-// DELETE IMAGE
+// DELETE IMAGE (PROTECTED)
 // ==========================
 
 router.delete(
 
   "/:id",
+
+  verifyToken,
 
   (req, res) => {
 

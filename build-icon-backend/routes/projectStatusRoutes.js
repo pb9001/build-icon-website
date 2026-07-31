@@ -1,164 +1,168 @@
 const express = require("express");
 const router = express.Router();
+
 const db = require("../config/db");
+const verifyToken = require("../middleware/authMiddleware");
 
+// ==============================
+// GET PROJECT STATUS (PUBLIC)
+// ==============================
 
-// GET PROJECT STATUS
+router.get("/", (req, res) => {
 
-router.get("/",(req,res)=>{
+  db.query(
 
+    "SELECT * FROM project_status LIMIT 1",
 
-db.query(
+    (err, result) => {
 
-"SELECT * FROM project_status LIMIT 1",
+      if (err) {
 
-(err,result)=>{
+        return res.status(500).json(err);
 
+      }
 
-if(err){
+      const data = result[0];
 
-return res.status(500).json(err);
+      const stages = [
 
-}
+        ...data.completed.map(item => ({
 
+          name: item,
 
-const data=result[0];
+          status: "completed"
 
+        })),
 
-const stages=[
+        {
 
-...data.completed.map(item=>({
+          name: data.current_stage,
 
-name:item,
+          status: "current"
 
-status:"completed"
+        },
 
-})),
+        ...data.remaining.map(item => ({
 
-{
+          name: item,
 
-name:data.current_stage,
+          status: "pending"
 
-status:"current"
+        }))
 
-},
+      ];
 
-...data.remaining.map(item=>({
+      res.json({
 
-name:item,
+        id: data.id,
 
-status:"pending"
+        stages: stages,
 
-}))
+        possessionDate: data.possession_date
 
-];
+      });
 
+    }
 
-res.json({
-
-id:data.id,
-
-stages:stages,
-
-possessionDate:data.possession_date
-
-});
-
-
-}
-
-
-);
-
+  );
 
 });
 
+// ==============================
+// UPDATE PROJECT STATUS (PROTECTED)
+// ==============================
 
+router.put(
 
+  "/",
 
+  verifyToken,
 
-// UPDATE PROJECT STATUS
+  (req, res) => {
 
-router.put("/",(req,res)=>{
+    const stages = req.body.stages;
 
+    const current =
 
-const stages=req.body.stages;
+      stages.find(
 
+        stage => stage.status === "current"
 
-const current=
-stages.find(
-stage=>stage.status==="current"
+      );
+
+    const completed =
+
+      stages
+
+        .filter(
+
+          stage => stage.status === "completed"
+
+        )
+
+        .map(
+
+          stage => stage.name
+
+        );
+
+    const remaining =
+
+      stages
+
+        .filter(
+
+          stage => stage.status === "pending"
+
+        )
+
+        .map(
+
+          stage => stage.name
+
+        );
+
+    db.query(
+
+      `UPDATE project_status
+       SET current_stage=?,
+           completed=?,
+           remaining=?,
+           possession_date=?
+       WHERE id=1`,
+
+      [
+
+        current ? current.name : "",
+
+        JSON.stringify(completed),
+
+        JSON.stringify(remaining),
+
+        req.body.possessionDate
+
+      ],
+
+      (err) => {
+
+        if (err) {
+
+          return res.status(500).json(err);
+
+        }
+
+        res.json({
+
+          message: "Project Status Updated"
+
+        });
+
+      }
+
+    );
+
+  }
+
 );
 
-
-const completed=
-stages
-.filter(
-stage=>stage.status==="completed"
-)
-.map(
-stage=>stage.name
-);
-
-
-const remaining=
-stages
-.filter(
-stage=>stage.status==="pending"
-)
-.map(
-stage=>stage.name
-);
-
-
-
-db.query(
-
-`UPDATE project_status
-SET current_stage=?,
-completed=?,
-remaining=?,
-possession_date=?
-WHERE id=1`,
-
-[
-
-current ? current.name : "",
-
-JSON.stringify(completed),
-
-JSON.stringify(remaining),
-
-req.body.possessionDate
-
-],
-
-
-(err)=>{
-
-
-if(err){
-
-return res.status(500).json(err);
-
-}
-
-
-res.json({
-
-message:"Project Status Updated"
-
-});
-
-
-}
-
-
-);
-
-
-});
-
-
-
-module.exports=router;
+module.exports = router;

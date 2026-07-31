@@ -1,126 +1,149 @@
 const express = require("express");
 const router = express.Router();
+
 const db = require("../config/db");
 const upload = require("../middleware/upload");
+const verifyToken = require("../middleware/authMiddleware");
 
 // ==============================
-// GET ALL DEVELOPERS
+// GET ALL DEVELOPERS (PUBLIC)
 // ==============================
 
 router.get("/", (req, res) => {
 
-db.query(
+  db.query(
 
-"SELECT * FROM developers",
+    "SELECT * FROM developers",
 
-(err, results) => {
+    (err, results) => {
 
-if(err){
+      if (err) {
 
-return res.status(500).json(err);
+        return res.status(500).json(err);
 
-}
+      }
 
-const developers = results.map((developer) => ({
+      const developers = results.map((developer) => ({
 
-...developer,
+        ...developer,
 
-people:
-typeof developer.people === "string"
-? JSON.parse(developer.people)
-: developer.people,
+        people:
+          typeof developer.people === "string"
+            ? JSON.parse(developer.people)
+            : developer.people,
 
-phones:
-typeof developer.phones === "string"
-? JSON.parse(developer.phones)
-: developer.phones
+        phones:
+          typeof developer.phones === "string"
+            ? JSON.parse(developer.phones)
+            : developer.phones
 
-}));
+      }));
 
-res.json(developers);
+      res.json(developers);
 
-}
+    }
+
+  );
+
+});
+
+// ==============================
+// UPDATE DEVELOPER (PROTECTED)
+// ==============================
+
+router.put(
+
+  "/:id",
+
+  verifyToken,
+
+  (req, res) => {
+
+    const {
+
+      company,
+      logo,
+      people,
+      phones,
+      whatsapp
+
+    } = req.body;
+
+    db.query(
+
+      `UPDATE developers
+       SET company=?,
+           logo=?,
+           people=?,
+           phones=?,
+           whatsapp=?
+       WHERE id=?`,
+
+      [
+
+        company,
+        logo,
+        JSON.stringify(people),
+        JSON.stringify(phones),
+        whatsapp,
+        req.params.id
+
+      ],
+
+      (err) => {
+
+        if (err) {
+
+          return res.status(500).json(err);
+
+        }
+
+        res.json({
+
+          message: "Developer updated successfully"
+
+        });
+
+      }
+
+    );
+
+  }
 
 );
 
-});
-
 // ==============================
-// UPDATE DEVELOPER
-// ==============================
-
-router.put("/:id",(req,res)=>{
-
-const {company,logo,people,phones,whatsapp}=req.body;
-
-db.query(
-
-`UPDATE developers
-SET company=?,
-logo=?,
-people=?,
-phones=?,
-whatsapp=?
-WHERE id=?`,
-
-[
-company,
-logo,
-JSON.stringify(people),
-JSON.stringify(phones),
-whatsapp,
-req.params.id
-],
-
-(err)=>{
-
-if(err){
-
-return res.status(500).json(err);
-
-}
-
-res.json({
-
-message:"Developer updated successfully"
-
-});
-
-}
-
-);
-
-});
-
-// ==============================
-// UPLOAD DEVELOPER LOGO
+// UPLOAD DEVELOPER LOGO (PROTECTED)
 // ==============================
 
 router.post(
 
-"/upload-logo",
+  "/upload-logo",
 
-upload.single("logo"),
+  verifyToken,
 
-(req,res)=>{
+  upload.single("logo"),
 
-if(!req.file){
+  (req, res) => {
 
-return res.status(400).json({
+    if (!req.file) {
 
-message:"No image uploaded"
+      return res.status(400).json({
 
-});
+        message: "No image uploaded"
 
-}
+      });
 
-res.json({
+    }
 
-logo:`/uploads/${req.file.filename}`
+    res.json({
 
-});
+      logo: `/uploads/${req.file.filename}`
 
-}
+    });
+
+  }
+
 );
 
-module.exports=router;
+module.exports = router;

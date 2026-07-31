@@ -2,10 +2,12 @@ const express = require("express");
 const cors = require("cors");
 const path = require("path");
 const db = require("./config/db");
+const authRoutes = require("./routes/authRoutes");
+
 
 const app = express();
 
-const PORT = 5002;
+const PORT = process.env.PORT ||  5002;
 
 // ==========================
 // MIDDLEWARE
@@ -60,6 +62,8 @@ app.use(
   "/developers",
   developersRoutes
 );
+
+app.use("/auth", authRoutes);
 
 // ==========================
 // HOME ROUTE

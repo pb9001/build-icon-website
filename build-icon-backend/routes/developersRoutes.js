@@ -5,43 +5,98 @@ const db = require("../config/db");
 const upload = require("../middleware/upload");
 const verifyToken = require("../middleware/authMiddleware");
 
+const BASE_URL =
+  process.env.BASE_URL ||
+  "https://build-icon-website-production.up.railway.app";
+
 // ==============================
-// GET ALL DEVELOPERS (PUBLIC)
+// GET ALL DEVELOPERS
 // ==============================
 
 router.get("/", (req, res) => {
 
+  db.query("SELECT * FROM developers", (err, results) => {
+
+    if (err) {
+      console.log(err);
+
+      return res.status(500).json({
+        message: err.message,
+        code: err.code
+      });
+    }
+
+    const developers = results.map((developer) => ({
+
+      ...developer,
+
+      logo: `${BASE_URL}${developer.logo}`,
+
+      people:
+        typeof developer.people === "string"
+          ? JSON.parse(developer.people)
+          : developer.people,
+
+      phones:
+        typeof developer.phones === "string"
+          ? JSON.parse(developer.phones)
+          : developer.phones
+
+    }));
+
+    res.json(developers);
+
+  });
+
+});
+
+// ==============================
+// UPDATE DEVELOPER
+// ==============================
+
+router.put("/:id", verifyToken, (req, res) => {
+
+  const {
+    company,
+    logo,
+    people,
+    phones,
+    whatsapp
+  } = req.body;
+
   db.query(
 
-    "SELECT * FROM developers",
+    `UPDATE developers
+     SET company=?,
+         logo=?,
+         people=?,
+         phones=?,
+         whatsapp=?
+     WHERE id=?`,
 
-    (err, results) => {
+    [
+      company,
+      logo.replace(BASE_URL, ""),
+      JSON.stringify(people),
+      JSON.stringify(phones),
+      whatsapp,
+      req.params.id
+    ],
+
+    (err) => {
 
       if (err) {
-  console.log("❌ SQL ERROR:", err);
-  return res.status(500).json({
-    message: err.message,
-    code: err.code
-  });
-}
+        console.log(err);
 
-      const developers = results.map((developer) => ({
+        return res.status(500).json({
+          message: err.message,
+          code: err.code
+        });
+      }
 
-        ...developer,
-
-        people:
-          typeof developer.people === "string"
-            ? JSON.parse(developer.people)
-            : developer.people,
-
-        phones:
-          typeof developer.phones === "string"
-            ? JSON.parse(developer.phones)
-            : developer.phones
-
-      }));
-
-      res.json(developers);
+      res.json({
+        message: "Developer updated successfully"
+      });
 
     }
 
@@ -50,73 +105,7 @@ router.get("/", (req, res) => {
 });
 
 // ==============================
-// UPDATE DEVELOPER (PROTECTED)
-// ==============================
-
-router.put(
-
-  "/:id",
-
-  verifyToken,
-
-  (req, res) => {
-
-    const {
-
-      company,
-      logo,
-      people,
-      phones,
-      whatsapp
-
-    } = req.body;
-
-    db.query(
-
-      `UPDATE developers
-       SET company=?,
-           logo=?,
-           people=?,
-           phones=?,
-           whatsapp=?
-       WHERE id=?`,
-
-      [
-
-        company,
-        logo,
-        JSON.stringify(people),
-        JSON.stringify(phones),
-        whatsapp,
-        req.params.id
-
-      ],
-
-      (err) => {
-
-        console.log(err);
-
-return res.status(500).json({
-  message: err.message,
-  code: err.code
-});
-
-        res.json({
-
-          message: "Developer updated successfully"
-
-        });
-
-      }
-
-    );
-
-  }
-
-);
-
-// ==============================
-// UPLOAD DEVELOPER LOGO (PROTECTED)
+// UPLOAD LOGO
 // ==============================
 
 router.post(
@@ -132,16 +121,14 @@ router.post(
     if (!req.file) {
 
       return res.status(400).json({
-
-        message: "No image uploaded"
-
+        message: "No logo uploaded"
       });
 
     }
 
     res.json({
 
-      logo: `/uploads/${req.file.filename}`
+      logo: `${BASE_URL}/uploads/${req.file.filename}`
 
     });
 

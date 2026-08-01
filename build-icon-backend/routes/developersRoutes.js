@@ -18,10 +18,12 @@ router.get("/", (req, res) => {
     (err, results) => {
 
       if (err) {
-
-        return res.status(500).json(err);
-
-      }
+  console.log("❌ SQL ERROR:", err);
+  return res.status(500).json({
+    message: err.message,
+    code: err.code
+  });
+}
 
       const developers = results.map((developer) => ({
 
@@ -92,11 +94,12 @@ router.put(
 
       (err) => {
 
-        if (err) {
+        console.log(err);
 
-          return res.status(500).json(err);
-
-        }
+return res.status(500).json({
+  message: err.message,
+  code: err.code
+});
 
         res.json({
 

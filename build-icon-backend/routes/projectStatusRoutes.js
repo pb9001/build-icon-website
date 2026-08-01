@@ -145,11 +145,12 @@ router.put(
 
       (err) => {
 
-        if (err) {
+        console.log(err);
 
-          return res.status(500).json(err);
-
-        }
+return res.status(500).json({
+  message: err.message,
+  code: err.code
+});
 
         res.json({
 

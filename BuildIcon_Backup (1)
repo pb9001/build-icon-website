@@ -64,7 +64,7 @@ CREATE TABLE `gallery` (
 
 LOCK TABLES `gallery` WRITE;
 /*!40000 ALTER TABLE `gallery` DISABLE KEYS */;
-INSERT INTO `gallery` VALUES (1,'img1.jpg','http://localhost:5002/uploads/img1.jpg'),(2,'img2.jpg','http://localhost:5002/uploads/img2.jpg'),(3,'img3.jpg','http://localhost:5002/uploads/img3.jpg');
+INSERT INTO `gallery` VALUES (1,'img1.jpg','${API_URL}/uploads/img1.jpg'),(2,'img2.jpg','${API_URL}/uploads/img2.jpg'),(3,'img3.jpg','${API_URL}/uploads/img3.jpg');
 /*!40000 ALTER TABLE `gallery` ENABLE KEYS */;
 UNLOCK TABLES;
 

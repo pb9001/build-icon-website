@@ -2,30 +2,29 @@ const express = require("express");
 const router = express.Router();
 
 const { BetaAnalyticsDataClient } = require("@google-analytics/data");
-const path = require("path");
+
+// Read the service account from Railway Environment Variable
+const credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT);
 
 const client = new BetaAnalyticsDataClient({
-  keyFilename: path.join(__dirname, "../service-account.json"),
+  credentials,
 });
 
 const propertyId = "548169716";
 
 router.get("/", async (req, res) => {
   try {
-
     // ==========================
     // OVERVIEW
     // ==========================
 
     const [overview] = await client.runReport({
       property: `properties/${propertyId}`,
-
       dimensions: [
         {
           name: "date",
         },
       ],
-
       metrics: [
         {
           name: "activeUsers",
@@ -34,7 +33,6 @@ router.get("/", async (req, res) => {
           name: "screenPageViews",
         },
       ],
-
       dateRanges: [
         {
           startDate: "30daysAgo",
@@ -49,19 +47,16 @@ router.get("/", async (req, res) => {
 
     const [devices] = await client.runReport({
       property: `properties/${propertyId}`,
-
       dimensions: [
         {
           name: "deviceCategory",
         },
       ],
-
       metrics: [
         {
           name: "activeUsers",
         },
       ],
-
       dateRanges: [
         {
           startDate: "30daysAgo",
@@ -76,26 +71,22 @@ router.get("/", async (req, res) => {
 
     const [sections] = await client.runReport({
       property: `properties/${propertyId}`,
-
       dimensions: [
         {
           name: "eventName",
         },
       ],
-
       metrics: [
         {
           name: "eventCount",
         },
       ],
-
       dateRanges: [
         {
           startDate: "30daysAgo",
           endDate: "today",
         },
       ],
-
       dimensionFilter: {
         filter: {
           fieldName: "eventName",
@@ -105,7 +96,6 @@ router.get("/", async (req, res) => {
           },
         },
       },
-
       orderBys: [
         {
           metric: {
@@ -114,19 +104,22 @@ router.get("/", async (req, res) => {
           desc: true,
         },
       ],
-
       limit: 5,
     });
 
-    const activeUsers = overview.rows.reduce(
-      (sum, row) => sum + Number(row.metricValues[0].value),
-      0
-    );
+    const activeUsers = overview.rows
+      ? overview.rows.reduce(
+          (sum, row) => sum + Number(row.metricValues[0].value),
+          0
+        )
+      : 0;
 
-    const pageViews = overview.rows.reduce(
-      (sum, row) => sum + Number(row.metricValues[1].value),
-      0
-    );
+    const pageViews = overview.rows
+      ? overview.rows.reduce(
+          (sum, row) => sum + Number(row.metricValues[1].value),
+          0
+        )
+      : 0;
 
     res.json({
       activeUsers,
@@ -134,15 +127,12 @@ router.get("/", async (req, res) => {
       devices: devices.rows || [],
       sections: sections.rows || [],
     });
-
   } catch (err) {
-
-    console.log(err);
+    console.error("Analytics Error:", err);
 
     res.status(500).json({
       message: err.message,
     });
-
   }
 });
 

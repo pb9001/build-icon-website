@@ -5,6 +5,7 @@ const cors = require("cors");
 const path = require("path");
 const db = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
+const analyticsRoutes = require("./routes/analyticsRoutes");
 
 
 const app = express();
@@ -46,6 +47,7 @@ const developersRoutes = require(
   "./routes/developersRoutes"
 );
 
+
 // ==========================
 // API ROUTES
 // ==========================
@@ -63,6 +65,11 @@ app.use(
 app.use(
   "/developers",
   developersRoutes
+);
+
+app.use(
+  "/analytics", 
+  analyticsRoutes
 );
 
 app.use("/auth", authRoutes);

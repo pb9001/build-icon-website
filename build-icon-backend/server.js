@@ -5,7 +5,7 @@ const cors = require("cors");
 const path = require("path");
 const db = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
-const analyticsRoutes = require("./routes/analyticsRoutes");
+// const analyticsRoutes = require("./routes/analyticsRoutes");
 
 
 const app = express();
@@ -67,10 +67,10 @@ app.use(
   developersRoutes
 );
 
-app.use(
-  "/analytics", 
-  analyticsRoutes
-);
+// app.use(
+//   "/analytics", 
+//   analyticsRoutes
+// );
 
 app.use("/auth", authRoutes);
 

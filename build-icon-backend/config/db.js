@@ -1,29 +1,18 @@
 const mysql = require("mysql2");
 
-console.log("🚀 USING RAILWAY MYSQL CONFIG");
-
-const db = mysql.createConnection({
+const pool = mysql.createPool({
   host: process.env.MYSQLHOST,
   user: process.env.MYSQLUSER,
   password: process.env.MYSQLPASSWORD,
   database: process.env.MYSQLDATABASE,
-  port: process.env.MYSQLPORT
+  port: process.env.MYSQLPORT,
+
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0
 });
 
-console.log("Database Host:", process.env.MYSQLHOST);
-console.log("Database User:", process.env.MYSQLUSER);
-console.log("Database Name:", process.env.MYSQLDATABASE);
-console.log("Database Port:", process.env.MYSQLPORT);
+console.log("🚀 Using MySQL Connection Pool");
 
-db.connect((err) => {
-  if (err) {
-    console.log("⚠️ MySQL not connected.");
-    console.log("Continuing without database...");
-    return;
-  }
-
-  console.log("✅ MySQL Connected Successfully");
-});
-
-
-module.exports = db;
+// Export the normal callback API (NOT .promise())
+module.exports = pool;

@@ -7,7 +7,7 @@ const verifyToken = require("../middleware/authMiddleware");
 
 const BASE_URL =
   process.env.BASE_URL ||
-  "https://build-icon-website-production.up.railway.app";
+  "https://build-icon-api.onrender.com";
 
 // ==============================
 // GET ALL DEVELOPERS

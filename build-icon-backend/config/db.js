@@ -7,12 +7,15 @@ const pool = mysql.createPool({
   database: process.env.MYSQLDATABASE,
   port: process.env.MYSQLPORT,
 
+  ssl: {
+    rejectUnauthorized: true
+  },
+
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0
 });
 
-console.log("🚀 Using MySQL Connection Pool");
+console.log("🚀 Using MySQL Connection Pool (SSL Enabled)");
 
-// Export the normal callback API (NOT .promise())
 module.exports = pool;
